@@ -64,7 +64,10 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHit();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -84,7 +87,8 @@ protected:
 
 	void FireButtonPressed();
 	void FireButtonReleased();
-	
+
+	void PlayHitReactMontage();
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -116,7 +120,11 @@ private:
 	UPROPERTY(EditAnywhere,Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
 
-	void HideCameaIfCharacterClose();
+	UPROPERTY(EditAnywhere,Category = Combat)
+	 UAnimMontage* HitReactMontage;
+	
+	
+	void HideCameraIfCharacterClose();
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold= 200.f;
     
