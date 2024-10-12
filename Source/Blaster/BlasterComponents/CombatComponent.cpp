@@ -186,10 +186,9 @@ void UCombatComponent::FireButtonPressed(bool bPressed) // called locally
 	bFireButtonPressed = bPressed;
 	if(bFireButtonPressed)
 	{
-		FHitResult HitResult;
-		TraceUnderCrosshair(HitResult);
+	
 		
-		ServerFire(HitResult.ImpactPoint);
+		ServerFire(HitTarget);
 		if(EquippedWeapon)
 		{
 			CrosshairShootingFactor += 0.2f;
