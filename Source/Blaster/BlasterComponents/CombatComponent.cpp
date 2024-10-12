@@ -16,6 +16,7 @@
 #include "blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHud.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 
 #define TRACE_LENGTH 80000.f
@@ -154,6 +155,24 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+void UCombatComponent::StartFireTimer()
+{
+	if(EquippedWeapon == nullptr || Character == nullptr) return;
+
+	Character->GetWorldTimerManager().SetTimer(FireTimer,this,&UCombatComponent::FireTimerFinished,EquippedWeapon->FireDelay);
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	bCanFire= true;
+	if(EquippedWeapon == nullptr) return;
+	
+	if(bFireButtonPressed && EquippedWeapon->bAutomatic)
+	{
+		Fire();
+	}
+}
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -181,20 +200,27 @@ void UCombatComponent::OnRep_EquippedWeapon()
 	}
 }
 
+void UCombatComponent::Fire()
+{
+	if(bCanFire&& EquippedWeapon)
+	{
+		bCanFire=false;
+		ServerFire(HitTarget);
+		
+			CrosshairShootingFactor += 0.2f;
+		
+		StartFireTimer();
+	}
+	
+}
+
 void UCombatComponent::FireButtonPressed(bool bPressed) // called locally 
 {
-	bFireButtonPressed = bPressed;
-	if(bFireButtonPressed)
-	{
 	
-		
-		ServerFire(HitTarget);
-		if(EquippedWeapon)
-		{
-			CrosshairShootingFactor += 0.2f;
-		}
-
-		
+	bFireButtonPressed = bPressed;
+	if(bFireButtonPressed && EquippedWeapon)
+	{
+		Fire();
 	}
 }
 
