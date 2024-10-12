@@ -26,7 +26,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
 
-public:	
+	
+
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -40,5 +41,9 @@ private:
 	UParticleSystem* ImpactEffect;
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
-
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+	
+public:
+	FORCEINLINE float GetDamage() const { return Damage; }
 };

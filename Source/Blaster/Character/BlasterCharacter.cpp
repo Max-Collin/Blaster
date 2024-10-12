@@ -17,7 +17,9 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Blaster/Blaster.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 
 ABlasterCharacter::ABlasterCharacter()
@@ -60,6 +62,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME_CONDITION(ABlasterCharacter,OverlappingWeapon,COND_OwnerOnly);
+	DOREPLIFETIME(ABlasterCharacter,Health)
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -96,6 +99,15 @@ void ABlasterCharacter::PlayHitReactMontage()
 	}
 }
 
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+	class AController* InstigatedController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health-Damage,0.f,MaxHealth);
+	UpdateHUDHeath();
+	PlayHitReactMontage();
+	
+}
+
 
 void ABlasterCharacter::OnRep_ReplicatedMovement()
 {
@@ -105,9 +117,24 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastReplicationMovement =0.f;
 }
 
+void ABlasterCharacter::UpdateHUDHeath()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController=BlasterPlayerController;
+	if(BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHudHealth(Health,MaxHealth);
+	}
+}
+
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UpdateHUDHeath();
+	if(HasAuthority())
+	{
+		OnTakeAnyDamage.AddDynamic(this,&ABlasterCharacter::ReceiveDamage);
+	}
 	
 }
 
@@ -382,10 +409,6 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 }
 
 
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
-}
 
 void ABlasterCharacter::HideCameraIfCharacterClose()
 {
@@ -406,6 +429,12 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
+}
+
+void ABlasterCharacter::OnRep_Health()
+{
+	UpdateHUDHeath();
+	PlayHitReactMontage();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
