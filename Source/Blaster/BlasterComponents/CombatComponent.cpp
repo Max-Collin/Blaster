@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "DrawDebugHelpers.h"
+#include "HeadMountedDisplayTypes.h"
 #include "blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/HUD/BlasterHud.h"
 #include "Camera/CameraComponent.h"
@@ -34,8 +35,8 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(UCombatComponent,EquippedWeapon);
 	DOREPLIFETIME(UCombatComponent,bAiming);
-
-	
+	DOREPLIFETIME_CONDITION(UCombatComponent,CarriedAmmo,COND_OwnerOnly);
+	DOREPLIFETIME(UCombatComponent,CombatState);
 	
 }
 
@@ -51,6 +52,10 @@ void UCombatComponent::BeginPlay()
 		{
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView;
 			CurrentFOV = DefaultFOV;
+		}
+		if (Character->HasAuthority())
+		{
+			InitializeCarriedAmmo();
 		}
 	}
 	
@@ -136,6 +141,7 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	}
 }
 
+
 void UCombatComponent::InterpFOV(float DeltaTime)
 {
 	if(EquippedWeapon == nullptr) return;
@@ -173,6 +179,28 @@ void UCombatComponent::FireTimerFinished()
 	}
 }
 
+bool UCombatComponent::CanFire()
+{
+	if (EquippedWeapon == nullptr) return false;
+	return !EquippedWeapon->IsEmpty() || !bCanFire;
+	
+}
+
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	PlayerController = PlayerController == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHudCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponTypes::EWT_AssaultRifle, StartingARAmmo);
+}
+
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	bAiming = bIsAiming;
@@ -195,6 +223,13 @@ void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if(EquippedWeapon && Character)
 	{
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));
+		if(HandSocket)
+		{
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
+		}
+		
 		Character->GetCharacterMovement()->bOrientRotationToMovement=false;
 		Character->bUseControllerRotationYaw = true;
 	}
@@ -202,7 +237,7 @@ void UCombatComponent::OnRep_EquippedWeapon()
 
 void UCombatComponent::Fire()
 {
-	if(bCanFire&& EquippedWeapon)
+	if(CanFire())
 	{
 		bCanFire=false;
 		ServerFire(HitTarget);
@@ -312,6 +347,10 @@ void UCombatComponent::TraceUnderCrosshair(FHitResult& TraceHitResult)
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if(Character == nullptr || WeaponToEquip == nullptr) return;
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
 	EquippedWeapon = WeaponToEquip;
 
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
@@ -321,7 +360,64 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 	}
 	EquippedWeapon->SetOwner(Character);
+	EquippedWeapon->SetHudAmmo();
+
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+	
+	PlayerController = PlayerController == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : PlayerController;
+	if (PlayerController)
+	{
+		PlayerController->SetHudCarriedAmmo(CarriedAmmo);
+	}
+	
 	Character->GetCharacterMovement()->bOrientRotationToMovement=false;
 	Character->bUseControllerRotationYaw = true;
 }
+
+void UCombatComponent::Reload()
+{
+	if (CarriedAmmo>0 && CombatState != ECombatState::ECS_Reloading)
+	{
+		ServerReload();
+	}
+}
+
+void UCombatComponent::FinishReloading()
+{
+	if (Character == nullptr) return;
+	if (Character->HasAuthority())
+	{
+		CombatState = ECombatState::ECS_Unoccupied;
+	}
+	
+}
+
+void UCombatComponent::HandleReload()
+{
+	Character->PlayReloadMontage();
+}
+
+
+
+void UCombatComponent::ServerReload_Implementation()
+{
+	if (Character == nullptr) return;
+	CombatState = ECombatState::ECS_Reloading;
+	HandleReload();
+	
+}
+
+void UCombatComponent::OnRep_CombatState()
+{
+	switch (CombatState)
+	{
+		case ECombatState::ECS_Reloading:
+			HandleReload();
+			break;
+	}
+}
+
 

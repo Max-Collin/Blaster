@@ -7,6 +7,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -39,6 +40,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bAiming = BlasterCharacter->IsAiming();
 	TurningInPlace = BlasterCharacter->GetTurningInPlace();
 	bRotateRootBone = BlasterCharacter->ShouldRotateRootBone();
+	bElim = BlasterCharacter->IsElim();
 
 	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
@@ -76,6 +78,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			RightHandRotation = FMath::RInterpTo(RightHandRotation,LookAtRotation,DeltaSeconds,30.f);
 
 		}
+
+		bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatState::ECS_Reloading;
 		
 		/* Trace Lines between crosshair target and gun muzzle
 		 

@@ -10,6 +10,7 @@
 #include "Animation/AnimationAsset.h"
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Blaster/PlayerController/BlasterPlayerController.h"
 
 AWeapon::AWeapon()
 {
@@ -57,8 +58,25 @@ void AWeapon::Tick(float DeltaTime)
 void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AWeapon, WeaponState)
+	DOREPLIFETIME(AWeapon, WeaponState);
+	DOREPLIFETIME(AWeapon, Ammo);
 }
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	if (Owner == nullptr)
+	{
+		BlasterOwnerCharacter = nullptr;
+		BlasterOwnerController = nullptr;
+	}
+	else
+	{
+		SetHudAmmo();
+	}
+	
+}
+
 void AWeapon::OnRep_WeaponState()
 {
 	switch (WeaponState)
@@ -66,8 +84,45 @@ void AWeapon::OnRep_WeaponState()
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false);
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	}
+	
+}
+
+void AWeapon::SetHudAmmo()
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+
+	if (BlasterOwnerCharacter)
+	{
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->GetController()) : BlasterOwnerController;
+		if (BlasterOwnerController)
+		{
+			BlasterOwnerController->SetHudWeaponAmmo(Ammo);
+		}
+	}
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHudAmmo();
+}
+
+void AWeapon::SpendRound()
+{
+	Ammo = FMath::Clamp(Ammo-1,0,MagCapacity);
+
+	SetHudAmmo();
+	
 }
 
 void AWeapon::SetWeaponState(EWeaponState State)
@@ -76,11 +131,30 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	switch (WeaponState)
 	{
 	case EWeaponState::EWS_Equipped:
+		
 		ShowPickupWidget(false);
 		GetAreaSphere()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		WeaponMesh->SetSimulatePhysics(false);
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		if (HasAuthority())
+		{
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		break;
 	}
 	
+}
+
+bool AWeapon::IsEmpty()
+{
+	return Ammo <= 0;
 }
 
 void AWeapon::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent*
@@ -142,5 +216,17 @@ void AWeapon::Fire(const FVector& HitTarget)
 				}
 		}
 	}
+	SpendRound();
+}
+
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld,true);
+	WeaponMesh->DetachFromComponent(DetachRules);
+	SetOwner(nullptr);
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
+	
 }
 

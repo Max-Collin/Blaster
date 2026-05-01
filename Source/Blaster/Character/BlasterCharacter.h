@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
-
+#include "Components/TimelineComponent.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -54,7 +56,9 @@ class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCro
 	/*Fire Input Action*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
-
+	/*Reload Input Action*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
 public:
 	ABlasterCharacter();
 
@@ -64,11 +68,16 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
+	void PlayReloadMontage();
 	
 
 
 	virtual void OnRep_ReplicatedMovement();
-	
+	void Elim();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastElim();
+
+	virtual void Destroyed() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -81,6 +90,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 
 	void Equip();
+	void Reload();
 	void Crouching();
 	virtual void Jump() override;
 	void AimButtonPressed();
@@ -94,9 +104,13 @@ protected:
 	void FireButtonReleased();
 
 	void PlayHitReactMontage();
+	void PlayElimMontage();
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor,float Damage, const UDamageType* DamageType, class AController* InstigatedController,AActor* DamageCauser);
 	void UpdateHUDHeath();
+
+	//Poll for any relevant classes and initialize the HUD
+	void PollInit();
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -112,7 +126,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly , meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 	
 	UFUNCTION(Server, Reliable)
@@ -130,7 +144,12 @@ private:
 
 	UPROPERTY(EditAnywhere,Category = Combat)
 	 UAnimMontage* HitReactMontage;
-	
+
+	UPROPERTY(EditAnywhere,Category = Combat)
+	UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere,Category = Combat)
+	UAnimMontage* ReloadMontage;
 	
 	void HideCameraIfCharacterClose();
 	UPROPERTY(EditAnywhere)
@@ -154,9 +173,49 @@ private:
 	
 	UFUNCTION()
 	void OnRep_Health();
-
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
+
+	bool bElim = false;
+
+	FTimerHandle ElimTimerHandle;
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+	void ElimTimerFinished();
+
+	/*
+	 *Dissolve Effect
+	 */
+	UPROPERTY(visibleAnywhere)
+	UTimelineComponent* DissolveTimeline;
 	
+	FOnTimelineFloat DissolveTrack;
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	void StartDissolve();
+
+	UPROPERTY(EditAnywhere)
+	UCurveFloat* DissolveCurve;
+	// Dynamic instance that can be changed at runtime
+	UPROPERTY(visibleAnywhere, Category = Elim)
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	// Material instance set on the blueprint, used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = Elim)
+	UMaterialInstance* DissolveMaterialInstance;
+	
+	/*
+	* Elim Bot
+	 */
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* ElimBotEffect;
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* ElimBotComponent;
+	UPROPERTY(EditAnywhere)
+	USoundCue* ElimBotSound;
+
+
+	UPROPERTY()
+	class ABlasterPlayerState* BlasterPlayerState;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -169,6 +228,10 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return  TurningInPlace;}
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 	FORCEINLINE bool ShouldRotateRootBone() const {return bRotateRootBone;}
+	FORCEINLINE bool IsElim() const {return bElim;}
+	FORCEINLINE float GetHealth() const {return Health;}
+	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
+	ECombatState GetCombatState() const ;
 
 	
 };

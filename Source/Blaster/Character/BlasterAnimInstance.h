@@ -33,7 +33,7 @@ private:
 	
 	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
 	bool bWeaponEquipped;
-	
+	UPROPERTY()
 	class AWeapon* EquippedWeapon;
 
 	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
@@ -64,4 +64,8 @@ private:
 	bool bLocallyControlled = false;
 	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
 	bool bRotateRootBone;
+	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
+	bool bElim;
+	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
+	bool bUseFABRIK;
 };

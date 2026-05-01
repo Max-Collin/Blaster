@@ -62,7 +62,7 @@ private:
 
 	//
 	// To add to the online session interface delegate list
-	// multiplayerSessionSubsytem internal callbacks bound to these
+	// multiplayerSessionSubsystem internal callbacks bound to these
 	//
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
 	FDelegateHandle CreateSessionCompleteDelegateHandle;

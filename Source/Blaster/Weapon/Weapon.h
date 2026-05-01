@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 
 #include "Weapon.generated.h"
 
@@ -29,9 +30,12 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
-
+	void Dropped();
+	void SetHudAmmo();
 
 	/*
 	 Textures for the weapon Crosshairs
@@ -46,6 +50,8 @@ public:
 	UTexture2D* CrosshairsTop;
 	UPROPERTY(EditAnywhere, Category = Crosshairs)
 	UTexture2D* CrosshairsBottom;
+
+	
 
 	/*
 	 * Zoomed FOV while aiming
@@ -89,6 +95,7 @@ private:
 	UFUNCTION()
 	void OnRep_WeaponState();
 	
+
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -96,8 +103,23 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
+	UPROPERTY(EditAnywhere , ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
 	
-	
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
+
+	UPROPERTY(EditAnywhere)
+	EWeaponTypes WeaponType;
 public:	
 	
 	void SetWeaponState(EWeaponState State);
@@ -105,6 +127,10 @@ public:
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh;}
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV;}
 	FORCEINLINE float GetZoomedInterpSpeed() const { return ZoomedInterpSpeed;}
+
+	bool IsEmpty();
+
+	FORCEINLINE EWeaponTypes GetWeaponType() const {return  WeaponType;}
 	
 };
 

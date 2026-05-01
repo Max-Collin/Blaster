@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "Blaster/HUD/BlasterHud.h"
 #include "Components/ActorComponent.h"
-
+#include "Blaster/Weapon/WeaponTypes.h"
+#include "Blaster/BlasterTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
 
@@ -23,6 +24,9 @@ public:
 	
 	
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+	void Reload();
+	UFUNCTION(blueprintCallable, Category = "CombatComponent")
+	void FinishReloading();
 protected:
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
@@ -43,13 +47,20 @@ protected:
 	void TraceUnderCrosshair(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime);
+
+	UFUNCTION(server, Reliable)
+	void ServerReload();
+
+	void HandleReload();
 	
 private:
-	
+	UPROPERTY()
 	ABlasterCharacter* Character;
+	UPROPERTY()
 	class ABlasterPlayerController* PlayerController;
+	UPROPERTY()
 	class ABlasterHud* HUD;
-	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon , VisibleAnywhere)
 	AWeapon* EquippedWeapon;
 	UPROPERTY(Replicated)
 	bool bAiming;
@@ -96,8 +107,31 @@ private:
 	
 	void StartFireTimer();
 	void FireTimerFinished();
+
+	bool CanFire();
+
+	//carried weapon for the current weapon
+	UPROPERTY(replicated = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+
+	void OnRep_CarriedAmmo();
+
+	TMap<EWeaponTypes, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
+
+	void InitializeCarriedAmmo();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CombatState )
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+
+	UFUNCTION()
+	void OnRep_CombatState();
+
+	
 public:	
 	
-
+	 
 		
 };

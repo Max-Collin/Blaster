@@ -43,7 +43,7 @@ void UOverheadWidget::ShowPlayerName(APawn* InPawn)
 	FString PlayerName;
 	if(PlayerState == nullptr)
 	{
-		PlayerName = FString::Printf(TEXT("Unkown"));
+		PlayerName = FString::Printf(TEXT("Unknown"));
 	}
 	else
 	{
