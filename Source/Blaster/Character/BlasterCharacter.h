@@ -64,10 +64,13 @@ public:
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
-	
+	void PlayElimMontage();
 
 
 	virtual void OnRep_ReplicatedMovement();
+	void Elim();
+	UFUNCTION(NetMulticast,Reliable)
+	void MulticastElim();
 	
 
 protected:
@@ -94,6 +97,7 @@ protected:
 	void FireButtonReleased();
 
 	void PlayHitReactMontage();
+	
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor,float Damage, const UDamageType* DamageType, class AController* InstigatedController,AActor* DamageCauser);
 	void UpdateHUDHeath();
@@ -129,8 +133,10 @@ private:
 	class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere,Category = Combat)
-	 UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
 	
+	UPROPERTY(EditAnywhere,Category = Combat)
+	UAnimMontage* ElimMontage;
 	
 	void HideCameraIfCharacterClose();
 	UPROPERTY(EditAnywhere)
@@ -156,6 +162,15 @@ private:
 	void OnRep_Health();
 
 	class ABlasterPlayerController* BlasterPlayerController;
+
+	bool bElimmed = false;
+	
+	FTimerHandle ElimTimer;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+	
+	void ElimTimerFinished();
 	
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
@@ -169,6 +184,7 @@ public:
 	FORCEINLINE ETurningInPlace GetTurningInPlace() const {return  TurningInPlace;}
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 	FORCEINLINE bool ShouldRotateRootBone() const {return bRotateRootBone;}
+	FORCEINLINE bool IsElimmed() const {return bElimmed;}
 
 	
 };
