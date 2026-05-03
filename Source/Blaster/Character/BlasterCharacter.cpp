@@ -149,6 +149,7 @@ void ABlasterCharacter::Elim()
 	if (Combat&&Combat->EquippedWeapon)
 	{
 		Combat->EquippedWeapon->Dropped();
+		
 	}
 	MulticastElim();
 	GetWorldTimerManager().SetTimer(
@@ -161,6 +162,10 @@ void ABlasterCharacter::Elim()
 
 void ABlasterCharacter::MulticastElim_Implementation()
 {
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
 	bElimmed = true;
 	PlayElimMontage();
 
@@ -467,11 +472,11 @@ void ABlasterCharacter::FireButtonReleased()
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
 	
-	if( AO_Yaw > 90.f)
+	if( AO_Yaw > 60.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Right;
 	}
-	else if(AO_Yaw < -90.f)
+	else if(AO_Yaw < -60.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
 	}

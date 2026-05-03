@@ -29,6 +29,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void OnRep_Owner() override;
+	void SetHUDAmmo();
 	void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 	void Dropped();
@@ -96,8 +98,19 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<class ACasing> CasingClass;
 
+	UPROPERTY(EditAnywhere , ReplicatedUsing = OnRep_Ammo)
+	int32 Ammo;
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();
 	
-	
+	UPROPERTY(EditAnywhere)
+	int32 MagCapacity;
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
 public:	
 	
 	void SetWeaponState(EWeaponState State);
