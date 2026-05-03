@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
+#include "Components/TimelineComponent.h"
 
 
 #include "BlasterCharacter.generated.h"
@@ -71,6 +72,8 @@ public:
 	void Elim();
 	UFUNCTION(NetMulticast,Reliable)
 	void MulticastElim();
+
+	virtual void Destroyed() override;
 	
 
 protected:
@@ -101,6 +104,9 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor,float Damage, const UDamageType* DamageType, class AController* InstigatedController,AActor* DamageCauser);
 	void UpdateHUDHeath();
+
+	// Poll for any relevant classes and initialise the HUD
+	void PollInit();
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -172,6 +178,42 @@ private:
 	
 	void ElimTimerFinished();
 	
+	/**
+	* Dissolve effect
+	*/
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UTimelineComponent* DissolveTimeline;
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UCurveFloat* DissolveCurve;
+	
+	FOnTimelineFloat DissolveTrack;
+	
+	UFUNCTION()
+	void UpdateDissolveMaterial(float DissolveValue);
+	
+	void StartDissolve();
+
+	// Dynamic instance that can be changed at runtime
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UMaterialInstanceDynamic* DynamicDissolveMaterialInstance;
+	
+	// Material instance set on the Blueprint, used with the dynamic material instance
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UMaterialInstance* DissolveMaterialInstance;
+
+	/*
+	 * Elim bot
+	 */
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	UParticleSystem* ElimBotEffect;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Elim")
+	UParticleSystemComponent* ElimBotComponent;
+	
+	UPROPERTY(EditAnywhere, Category = "Elim")
+	class USoundCue* ElimBotSound;
+
+	class ABlasterPlayerState* BlasterPlayerState;
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -185,6 +227,7 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 	FORCEINLINE bool ShouldRotateRootBone() const {return bRotateRootBone;}
 	FORCEINLINE bool IsElimmed() const {return bElimmed;}
-
+	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
+	FORCEINLINE float GetHealth() const {return Health;}
 	
 };
