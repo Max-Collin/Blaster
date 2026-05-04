@@ -29,6 +29,8 @@ public:
 	void Reload();
 	UFUNCTION(blueprintcallable)
 	void FinishReloading();
+	void UpdateAmmoValues();
+
 protected:
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
@@ -55,6 +57,8 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
+
+	int32 AmountToReload();
 	
 	
 private:
