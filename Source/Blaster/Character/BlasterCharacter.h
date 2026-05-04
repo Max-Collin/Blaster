@@ -55,6 +55,9 @@ class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCro
 	/*Fire Input Action*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
+	/*Fire Input Action*/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
 
 public:
 	ABlasterCharacter();
@@ -98,6 +101,8 @@ protected:
 	
 	void FireButtonPressed();
 	void FireButtonReleased();
+
+	void ReloadButtonPressed();
 
 	void PlayHitReactMontage();
 	

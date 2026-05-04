@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blaster/HUD/BlasterHud.h"
 #include "Components/ActorComponent.h"
+#include "Blaster/Weapon/WeaponTypes.h"
 
 #include "CombatComponent.generated.h"
 
@@ -23,6 +24,8 @@ public:
 	
 	
 	void EquipWeapon(class AWeapon* WeaponToEquip);
+
+	void Reload();
 protected:
 	virtual void BeginPlay() override;
 	void SetAiming(bool bIsAiming);
@@ -98,6 +101,27 @@ private:
 	
 	void StartFireTimer();
 	void FireTimerFinished();
+
+	bool CanFire();
+	
+	/*
+	 * Ammo
+	 */
+	// Carried ammo for the current equipped weapon type
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;
+	
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	
+	UPROPERTY(EditAnywhere)
+	int32 StartARAmmo = 60;
+	
+	void InitializeCarriedAmmo();
+	
+	
 public:	
 	
 

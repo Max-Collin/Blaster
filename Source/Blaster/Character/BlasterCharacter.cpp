@@ -469,6 +469,14 @@ void ABlasterCharacter::FireButtonReleased()
 	}
 }
 
+void ABlasterCharacter::ReloadButtonPressed()
+{
+	if (Combat)
+	{
+		Combat->Reload();
+	}
+}
+
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
 	
@@ -657,6 +665,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		//Fire
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Started, this,&ABlasterCharacter::FireButtonPressed);
 		EnhancedInputComponent->BindAction(FireAction,ETriggerEvent::Completed, this,&ABlasterCharacter::FireButtonReleased);
+		//Reload
+		EnhancedInputComponent->BindAction(ReloadAction,ETriggerEvent::Started, this,&ABlasterCharacter::ReloadButtonPressed);
 	}
 	
 
