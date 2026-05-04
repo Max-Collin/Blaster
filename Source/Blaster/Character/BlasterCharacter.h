@@ -69,7 +69,7 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 	void PlayElimMontage();
-
+	void PlayReloadMontage();
 
 	virtual void OnRep_ReplicatedMovement();
 	void Elim();
@@ -140,8 +140,15 @@ private:
 
 	void TurnInPlace(float DeltaTime);
 	ETurningInPlace TurningInPlace;
+	
+	/*
+	 * Montages
+	 */
 	UPROPERTY(EditAnywhere,Category = Combat)
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere,Category = Combat)
+	UAnimMontage* ReloadMontage;
 
 	UPROPERTY(EditAnywhere,Category = Combat)
 	UAnimMontage* HitReactMontage;
