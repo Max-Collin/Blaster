@@ -496,6 +496,7 @@ void ABlasterCharacter::ReloadButtonPressed()
 	if (Combat)
 	{
 		Combat->Reload();
+		UE_LOG(LogTemp,Warning,TEXT("ReloadButtonPressed"));
 	}
 }
 
