@@ -496,7 +496,7 @@ void ABlasterCharacter::ReloadButtonPressed()
 	if (Combat)
 	{
 		Combat->Reload();
-		UE_LOG(LogTemp,Warning,TEXT("ReloadButtonPressed"));
+		
 	}
 }
 
@@ -652,6 +652,12 @@ FVector ABlasterCharacter::GetHitTarget() const
 {
 	if(Combat == nullptr) return FVector();
 	return Combat->HitTarget;
+}
+
+ECombatStates ABlasterCharacter::GetCombatState() const
+{
+	if(Combat == nullptr) return ECombatStates::ECS_MAX;
+	return Combat->CombatState;
 }
 
 void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

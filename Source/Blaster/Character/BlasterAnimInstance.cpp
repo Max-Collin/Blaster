@@ -7,6 +7,7 @@
 #include "Blaster/Weapon/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/BlasterTypes/CombatStates.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -77,6 +78,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			RightHandRotation = FMath::RInterpTo(RightHandRotation,LookAtRotation,DeltaSeconds,30.f);
 
 		}
+
+		bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading;
 		
 		/* Trace Lines between crosshair target and gun muzzle
 		 

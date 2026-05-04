@@ -8,7 +8,7 @@
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Components/TimelineComponent.h"
-
+#include "Blaster/BlasterTypes/CombatStates.h"
 
 #include "BlasterCharacter.generated.h"
 
@@ -119,7 +119,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* FollowCamera;
 	
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
@@ -127,7 +127,7 @@ private:
 	UFUNCTION()
 	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly , meta = (AllowPrivateAccess = "true"))
 	class UCombatComponent* Combat;
 	
 	UFUNCTION(Server, Reliable)
@@ -242,5 +242,5 @@ public:
 	FORCEINLINE bool IsElimmed() const {return bElimmed;}
 	FORCEINLINE float GetMaxHealth() const {return MaxHealth;}
 	FORCEINLINE float GetHealth() const {return Health;}
-	
+	ECombatStates GetCombatState() const;
 };
