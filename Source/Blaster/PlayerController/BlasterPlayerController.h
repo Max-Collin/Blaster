@@ -24,16 +24,20 @@ public:
 	void ClearHUDIcon();
 	virtual void OnPossess(APawn* PossessedPawn);
 	virtual void Tick(float DeltaSeconds) override;
-
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	// Sync with server world clock
 	virtual float GetServerTime();
 	// Sync with Server clock ASAP
 	virtual void ReceivedPlayer() override;
+
+	void OnMatchStateSet(FName State);
 protected:
 	virtual void BeginPlay() override;
 	void CheckTimeSync(float DeltaSeconds);
 
 	void SetHUDTime();
+
+	void PollInit();
 
 	/*
 	 * Sync time between client adn server
@@ -60,6 +64,20 @@ private:
 
 	float MatchTime = 120.f;
 	uint32 CountdownInt = 0;
+
+	UPROPERTY(ReplicatedUsing= OnRep_MatchState)
+	FName MatchState;
+
+	UFUNCTION()
+	void OnRep_MatchState();
 	
+	UPROPERTY()
+	class UCharacterOverlay* CharacterOverlay;
 	
+	bool bInitializeCharacterOverlay = false;
+
+	float HUDHealth;
+	float HUDMaxHealth;
+	float HUDScore;
+	float HUDDefeats;
 };
