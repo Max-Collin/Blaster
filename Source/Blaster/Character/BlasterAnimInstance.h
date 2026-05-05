@@ -68,5 +68,9 @@ private:
 	bool bElimmed;
 	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
 	bool bUseFABRIK;
+	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
+	bool bUseAimOffsets;
+	UPROPERTY(BlueprintReadOnly, Category = Character ,meta= (AllowPrivateAccess= "true"))
+	bool bTransfromRightHand;
 	
 };

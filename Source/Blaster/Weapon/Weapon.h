@@ -73,6 +73,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float FireDelay = 0.15f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	class USoundCue* EquipSounds;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* WeaponIconTexture;
 	
 protected:
 	
@@ -127,7 +133,7 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() const {return WeaponType;}
 	FORCEINLINE int32 GetAmmo() const {return Ammo;}
 	FORCEINLINE int32 GetMagCapacity() const {return MagCapacity;}
-	
+	FORCEINLINE UTexture2D* GetWeaponIcon() const{ return WeaponIconTexture; }
 	
 };
 

@@ -18,6 +18,7 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "Blaster/PlayerState/BlasterPlayerState.h"
+#include "Sound/SoundCue.h"
 
 
 #define TRACE_LENGTH 80000.f
@@ -180,6 +181,10 @@ void UCombatComponent::FireTimerFinished()
 	if(bFireButtonPressed && EquippedWeapon->bAutomatic)
 	{
 		Fire();
+	}
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 }
 
@@ -351,6 +356,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
+	
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
 	{
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
@@ -359,6 +365,21 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (PlayerController)
 	{
 		PlayerController->SetHUDCarriedAmmo(CarriedAmmo);
+
+		if (EquippedWeapon->WeaponIconTexture)
+		{
+			PlayerController->SetHUDWeaponIcon(EquippedWeapon->WeaponIconTexture);
+		}
+	}
+	
+
+	if(EquippedWeapon->EquipSounds)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this,EquippedWeapon->EquipSounds,Character->GetActorLocation());
+	}
+	if (EquippedWeapon->IsEmpty())
+	{
+		Reload();
 	}
 	Character->GetCharacterMovement()->bOrientRotationToMovement=false;
 	Character->bUseControllerRotationYaw = true;
@@ -376,6 +397,20 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		{
 			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());
 		}
+
+		if(EquippedWeapon->EquipSounds)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this,EquippedWeapon->EquipSounds,Character->GetActorLocation());
+		}
+		PlayerController = PlayerController == nullptr ? Cast<ABlasterPlayerController>(Character->GetController()) : PlayerController;
+		if (PlayerController)
+		{
+			if (EquippedWeapon->WeaponIconTexture)
+			{
+				PlayerController->SetHUDWeaponIcon(EquippedWeapon->WeaponIconTexture);
+			}
+		}
+		
 		Character->GetCharacterMovement()->bOrientRotationToMovement=false;
 		Character->bUseControllerRotationYaw = true;
 	}

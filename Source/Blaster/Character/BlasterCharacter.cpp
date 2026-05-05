@@ -503,11 +503,11 @@ void ABlasterCharacter::ReloadButtonPressed()
 void ABlasterCharacter::TurnInPlace(float DeltaTime)
 {
 	
-	if( AO_Yaw > 60.f)
+	if( AO_Yaw > 45.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Right;
 	}
-	else if(AO_Yaw < -60.f)
+	else if(AO_Yaw < -45.f)
 	{
 		TurningInPlace = ETurningInPlace::ETIP_Left;
 	}

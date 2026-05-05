@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+
 #include "CharacterOverlay.generated.h"
 
 /**
@@ -27,5 +28,8 @@ public:
 	UTextBlock* WeaponAmmoAmount;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CarriedAmmoAmount;
-	
+	UPROPERTY(meta = (BindWidget))
+	class UImage* WeaponTypeImage;
+	UPROPERTY(meta = (BindWidget))
+    UTextBlock* MatchCountdownText;
 };
