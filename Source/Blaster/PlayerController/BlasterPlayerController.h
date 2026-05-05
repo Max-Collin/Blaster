@@ -24,10 +24,36 @@ public:
 	void ClearHUDIcon();
 	virtual void OnPossess(APawn* PossessedPawn);
 	virtual void Tick(float DeltaSeconds) override;
+
+	// Sync with server world clock
+	virtual float GetServerTime();
+	// Sync with Server clock ASAP
+	virtual void ReceivedPlayer() override;
 protected:
 	virtual void BeginPlay() override;
+	void CheckTimeSync(float DeltaSeconds);
 
 	void SetHUDTime();
+
+	/*
+	 * Sync time between client adn server
+	 */
+	
+	// Request current server time passing in clients time when requested
+	UFUNCTION(Server,Reliable)
+	void ServerRequestServerTime(float TimeOfClientRequest);
+	
+	// Reports the current server time client in response to ServerRequestServerTime
+	UFUNCTION(Client,Reliable)
+	void ClientReportServerTime(float TimeOfClientRequest, float TimeServerReceivedClientRequest);
+
+	// Difference between client and server time
+	float ClientServerDelta = 0;
+
+	UPROPERTY(EditAnywhere, Category = Time)
+	float TimeSyncFrequency = 5.f;
+
+	float TimeSyncRunningTime = 0.f;
 private:
 	UPROPERTY()
 	class ABlasterHud* BlasterHud;
