@@ -80,8 +80,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		}
 
 		bUseFABRIK = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading;
-		bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading;
-		bTransfromRightHand = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading;
+		bUseAimOffsets = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
+		bTransfromRightHand = BlasterCharacter->GetCombatState() != ECombatStates::ECS_Reloading && !BlasterCharacter->GetDisableGameplay();
 		/* Trace Lines between crosshair target and gun muzzle
 		 
 		FTransform MuzzleTipTransform= EquippedWeapon->GetWeaponMesh()->GetSocketTransform(FName("MuzzleFlash"),RTS_World);
