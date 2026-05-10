@@ -21,11 +21,14 @@ protected:
 	virtual void Destroyed() override;
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,FVector NormalImpulse,const FHitResult& Hit);
-	
-	private:
+
 	UPROPERTY(EditAnywhere)
 	class UBoxComponent* CollisionBox;
-
+	
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* ImpactEffect;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ImpactSound;
 	
 
 
@@ -37,10 +40,7 @@ private:
 	class UParticleSystem* Tracer;
 	UPROPERTY()
 	class UParticleSystemComponent* TracerComponent;
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactEffect;
-	UPROPERTY(EditAnywhere)
-	class USoundCue* ImpactSound;
+	
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;
 	
