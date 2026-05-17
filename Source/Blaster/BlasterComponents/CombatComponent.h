@@ -134,6 +134,11 @@ private:
 	int32 StartARAmmo = 60;
 	UPROPERTY(EditAnywhere)
 	int32 StartRocketAmmo = 0;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartPistolAmmo = 0;
+	UPROPERTY(EditAnywhere)
+	int32 StartSMGAmmo = 0;
 	void InitializeCarriedAmmo();
 
 	UPROPERTY(ReplicatedUsing= OnRep_CombatState)
