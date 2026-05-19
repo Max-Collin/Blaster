@@ -21,7 +21,7 @@
 #include "Sound/SoundCue.h"
 
 
-#define TRACE_LENGTH 80000.f
+
 UCombatComponent::UCombatComponent()
 {
 	
@@ -229,6 +229,7 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_RocketLauncher, StartRocketAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartPistolAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SMG, StartSMGAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartShotgunAmmo);
 }
 
 
