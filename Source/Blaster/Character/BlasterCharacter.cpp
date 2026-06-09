@@ -121,6 +121,9 @@ void ABlasterCharacter::PlayReloadMontage()
 		case EWeaponType::EWT_Shotgun:
 			SectionName = FName("Rifle");
 			break;
+		case EWeaponType::EWT_SniperRifle:
+			SectionName = FName("Rifle");
+			break;
 		case EWeaponType::EWT_MAX:
 			break;
 		
@@ -250,6 +253,12 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	if (ElimBotSound)
 	{
 		UGameplayStatics::SpawnSoundAtLocation(this,ElimBotSound,GetActorLocation());
+	}
+
+	if(IsLocallyControlled() && Combat && Combat->bAiming && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponType()
+		== EWeaponType::EWT_SniperRifle)
+	{
+		ShowScopeWidget(false);
 	}
 }
 

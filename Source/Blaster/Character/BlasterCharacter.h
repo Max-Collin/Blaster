@@ -79,6 +79,9 @@ public:
 	virtual void Destroyed() override;
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowScopeWidget(bool bShowScope);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
